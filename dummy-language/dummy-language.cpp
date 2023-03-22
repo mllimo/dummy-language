@@ -1,28 +1,46 @@
 ﻿
 #include <iostream>
 #include <list>
+#include <new>
 
 #include "token.h"
 #include "enum_utility.h"
 #include "lexer.h"
+#include "expressions.h"
 
 /*
-* 
+*
     DECLARATION: TYPE ID | TYPE ID = EXPRESION
     BINARY_OPERATION: LITERAL OP LITERAL
     EXPRESION: LITERAL | BINARY_OPERATION
 */
 
+void CheckToken(const Token& token, TokenType expected_type)
+{
+    if (token.type != expected_type) throw std::runtime_error("Expected " + EnumToString(expected_type) + " but got " + EnumToString(token.type));
+}
+
+bool CheckToken(std::nothrow_t, const Token& token, TokenType expected_type)
+{
+    if (token.type != expected_type) return false;
+    return true;
+}
+
+bool CheckNext(std::list<Token>::iterator it, TokenType expected_type)
+{
+    ++it;
+    return it->type == expected_type;
+}
+
 enum StatementType {
     StatementType_UNDEFINED,
-    BASE_STATEMENT,
     DECLARATION
 };
 
 class Statement {
 public:
     virtual ~Statement() {}
-    virtual StatementType TypeOf() { return StatementType::BASE_STATEMENT; }
+    virtual StatementType TypeOf() { return {}; }
 };
 
 class Declaration : public Statement {
@@ -33,17 +51,24 @@ public:
         STRING
     };
 
+    Declaration(Type type, const std::string& id, std::unique_ptr<Expression> Expression) :
+        type(type),
+        id(id),
+        Expression(std::move(Expression))
+    {
+    }
+
     Declaration(Type type, const std::string& id) :
-        type_(type),
-        id_(id)
+        type(type),
+        id(id)
     {
     }
 
     StatementType TypeOf() override { return StatementType::DECLARATION; }
 
-private:
-    Type type_;
-    std::string id_;
+    Type type;
+    std::string id;
+    std::unique_ptr<Expression> Expression;
 };
 
 class Program {
@@ -51,13 +76,43 @@ public:
     std::list<std::unique_ptr<Statement>> statements;
 };
 
+std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_token)
+{
+    // TODO
+    std::unique_ptr<Expression> expr;
+    if (current_token->type == TokenType::NUMBER || current_token->type == TokenType::STRING || current_token->type == TokenType::ID) {
+
+        switch (current_token->type) {
+        case TokenType::NUMBER:
+            expr = std::make_unique<Number>(stod(current_token->body));
+            break;
+        case TokenType::STRING:
+            expr = std::make_unique<String>(current_token->body);
+            break;
+        case TokenType::ID:
+            expr = std::make_unique<Identifiation>(current_token->body);
+            break;
+        }
+
+        if (CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
+            ++current_token; // Binary operator
+            Token token_op = *current_token;
+            ++current_token; // second expr
+            auto expr2 = ParseExpresion(current_token);
+            expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
+        }
+    }
+
+    return expr;
+}
+
 std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_token)
 {
+    std::unique_ptr<Declaration> declaration;
     Declaration::Type type;
     std::string id;
 
-    // CheckToken(token, type)
-    if (current_token->type != TokenType::TYPE) throw std::runtime_error("Declaration with invalid token: Expected token of type TYPE");
+    CheckToken(*current_token, TokenType::TYPE);
 
     if (current_token->body == "number") {
         type = Declaration::Type::NUMBER;
@@ -68,24 +123,45 @@ std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_
 
     ++current_token;
 
-    // CheckToken(token, type)
-    if (current_token->type != TokenType::ID) throw std::runtime_error("Declaration with invalid token: Expected token of type ID");
+    CheckToken(*current_token, TokenType::ID);
+
     id = current_token->body;
 
-    std::unique_ptr<Declaration> declaration = std::make_unique<Declaration>(type, id);
+    if (!CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
+        declaration = std::make_unique<Declaration>(type, id);
+    }
+    else {
+        ++current_token; // binary op 
+        ++current_token;
+        auto expr = ParseExpresion(current_token);
+        declaration = std::make_unique<Declaration>(type, id, std::move(expr));
+    }
+
     return declaration;
+}
+
+std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_token)
+{
+    std::unique_ptr<Statement> statement;
+    Token& token = *current_token;
+
+    // Declaration
+    if (token.type == TokenType::TYPE) {
+        statement = ParseDeclaration(current_token);
+        ++current_token;
+        if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
+    }
+
+    return statement;
 }
 
 Program Parse(std::list<Token>& tokens)
 {
     Program program;
     for (auto it = tokens.begin(); it != tokens.end(); ++it) {
-        Token& token = *it;
-        if (token.type == TokenType::TYPE) {
-            program.statements.push_back(ParseDeclaration(it));
-            ++it;
-            if (it->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
-        }
+        auto statement = ParseStatement(it);
+        if (statement == nullptr) break;
+        program.statements.push_back(std::move(statement));
     }
     return program;
 }
@@ -93,11 +169,11 @@ Program Parse(std::list<Token>& tokens)
 int main()
 {
 
-    std::string text = "number variable;";
+    std::string text = "number variable = 2;";
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {
-        std::cout << token.body  << "(" << EnumToString(token.type) << ")"  << std::endl;
+        std::cout << token.body << "(" << EnumToString(token.type) << ")" << std::endl;
     }
 
     try {
