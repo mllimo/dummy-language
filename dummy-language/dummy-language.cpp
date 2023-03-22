@@ -1,99 +1,115 @@
-﻿#include <string>
+﻿
 #include <iostream>
-#include <regex>
-#include <unordered_map>
+#include <list>
 
-enum TokenType 
-{
-    UNDEFINED,
-    ID,
-    NUMBER,
-    STRING,
-    COMMENT,
-    WHITE,
-    TYPE,
-    SEMICOLON,
-    BINARY_OPERATOR,
+#include "token.h"
+#include "enum_utility.h"
+#include "lexer.h"
+
+/*
+* 
+    DECLARATION: TYPE ID | TYPE ID = EXPRESION
+    BINARY_OPERATION: LITERAL OP LITERAL
+    EXPRESION: LITERAL | BINARY_OPERATION
+*/
+
+enum StatementType {
+    StatementType_UNDEFINED,
+    BASE_STATEMENT,
+    DECLARATION
 };
 
-struct Token {
-    TokenType type;
-    std::string body;
+class Statement {
+public:
+    virtual ~Statement() {}
+    virtual StatementType TypeOf() { return StatementType::BASE_STATEMENT; }
 };
 
-template <typename ENUM>
-std::string EnumToString(ENUM value) { return ""; }
-
-template <>
-std::string EnumToString<TokenType>(TokenType value)
-{
-    static const std::unordered_map<TokenType, std::string> map = {
-        {TokenType::UNDEFINED, "UNDEFINED"},
-        {TokenType::ID, "ID"},
-        {TokenType::NUMBER, "NUMBER"},
-        {TokenType::STRING, "STRING"},
-        {TokenType::COMMENT, "COMMENT"},
-        {TokenType::WHITE, "WHITE"},
-        {TokenType::TYPE, "TYPE"},
-        {TokenType::SEMICOLON, "SEMICOLON"},
-        {TokenType::BINARY_OPERATOR, "BINARY_OPERATOR"}
+class Declaration : public Statement {
+public:
+    enum Type {
+        UNDEFINED,
+        NUMBER,
+        STRING
     };
 
-    auto it = map.find(value);
-    if (it == map.end()) throw std::runtime_error("EnumToString<TokenType> fails");
-    return it->second;
-}
-
-Token Lexer(std::string& text)
-{
-    static const std::regex ID_x("([a-z]|[A-Z])(_|[0-9]|[a-z]|[A-Z])*");
-    static const std::regex NUMBER_x("(\\+|-)?[0-9]+");
-    static const std::regex STRING_x("\"[^\"]*\"");
-    static const std::regex COMMENT("//[^\n]\n");
-    static const std::regex WHITE_x("\\s+");
-    static const std::regex TYPE_x("number|string");
-    static const std::regex SEMICOLON_x(";");
-    static const std::regex ASSING_OPERATOR_x("=");
-    static const std::regex BINARY_OPERATOR_x("=|\\+|-|\\*|/");
-
-    std::smatch matches;
-    Token token;
-
-    if (std::regex_search(text, matches, ID_x) && matches.position(0) == 0) token = { TokenType::ID,  matches[0] };
-    if (std::regex_search(text, matches, NUMBER_x) && matches.position(0) == 0) token = { TokenType::NUMBER, matches[0] };
-    if (std::regex_search(text, matches, STRING_x) && matches.position(0) == 0) token = { TokenType::STRING, matches[0] };
-    if (std::regex_search(text, matches, COMMENT) && matches.position(0) == 0) token = { TokenType::COMMENT, matches[0] };
-    if (std::regex_search(text, matches, WHITE_x) && matches.position(0) == 0) token = { TokenType::WHITE, matches[0] };
-    if (std::regex_search(text, matches, TYPE_x) && matches.position(0) == 0) token = { TokenType::TYPE, matches[0] };
-    if (std::regex_search(text, matches, SEMICOLON_x) && matches.position(0) == 0) token = { TokenType::SEMICOLON, matches[0] };
-    if (std::regex_search(text, matches, BINARY_OPERATOR_x) && matches.position(0) == 0) token = { TokenType::BINARY_OPERATOR, matches[0] };
-
-
-    text.erase(0, token.body.size());
-
-    return token;
-}
-
-std::vector<Token> Tokenize(std::string& text) 
-{
-    std::vector<Token> tokens;
-    while (!text.empty()) {
-        Token token = Lexer(text);
-        tokens.emplace_back(std::move(token));
+    Declaration(Type type, const std::string& id) :
+        type_(type),
+        id_(id)
+    {
     }
 
-    return tokens;
+    StatementType TypeOf() override { return StatementType::DECLARATION; }
+
+private:
+    Type type_;
+    std::string id_;
+};
+
+class Program {
+public:
+    std::list<std::unique_ptr<Statement>> statements;
+};
+
+std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_token)
+{
+    Declaration::Type type;
+    std::string id;
+
+    // CheckToken(token, type)
+    if (current_token->type != TokenType::TYPE) throw std::runtime_error("Declaration with invalid token: Expected token of type TYPE");
+
+    if (current_token->body == "number") {
+        type = Declaration::Type::NUMBER;
+    }
+    else if (current_token->body == "string") {
+        type = Declaration::Type::STRING;
+    }
+
+    ++current_token;
+
+    // CheckToken(token, type)
+    if (current_token->type != TokenType::ID) throw std::runtime_error("Declaration with invalid token: Expected token of type ID");
+    id = current_token->body;
+
+    std::unique_ptr<Declaration> declaration = std::make_unique<Declaration>(type, id);
+    return declaration;
+}
+
+Program Parse(std::list<Token>& tokens)
+{
+    Program program;
+    for (auto it = tokens.begin(); it != tokens.end(); ++it) {
+        Token& token = *it;
+        if (token.type == TokenType::TYPE) {
+            program.statements.push_back(ParseDeclaration(it));
+            ++it;
+            if (it->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
+        }
+    }
+    return program;
 }
 
 int main()
 {
 
-    std::string text = "number variable\t=\t3 + 3";
+    std::string text = "number variable;";
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {
         std::cout << token.body  << "(" << EnumToString(token.type) << ")"  << std::endl;
     }
+
+    try {
+        Program program = Parse(tokens);
+        for (auto& statement : program.statements) {
+            std::cout << statement->TypeOf() << std::endl;
+        }
+    }
+    catch (std::exception& err) {
+        std::cerr << err.what() << std::endl;
+    }
+
 
     return 0;
 }
