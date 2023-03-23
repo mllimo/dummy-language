@@ -19,6 +19,8 @@ Token Lexer(std::string& text)
     static const std::regex SEMICOLON_x(";");
     static const std::regex ASSING_OPERATOR_x("=");
     static const std::regex BINARY_OPERATOR_x("=|\\+|-|\\*|/");
+    static const std::regex LP_x("\\(");
+    static const std::regex RP_x("\\)");
 
     std::smatch matches;
     Token token;
@@ -31,7 +33,8 @@ Token Lexer(std::string& text)
     if (std::regex_search(text, matches, TYPE_x) && matches.position(0) == 0) token = { TokenType::TYPE, matches[0] };
     if (std::regex_search(text, matches, SEMICOLON_x) && matches.position(0) == 0) token = { TokenType::SEMICOLON, matches[0] };
     if (std::regex_search(text, matches, BINARY_OPERATOR_x) && matches.position(0) == 0) token = { TokenType::BINARY_OPERATOR, matches[0] };
-
+    if (std::regex_search(text, matches, LP_x) && matches.position(0) == 0) token = { TokenType::L_PARENTHESIS, matches[0] };
+    if (std::regex_search(text, matches, RP_x) && matches.position(0) == 0) token = { TokenType::R_PARENTHESIS, matches[0] };
 
     text.erase(0, token.body.size());
 

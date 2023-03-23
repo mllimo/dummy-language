@@ -19,7 +19,9 @@ std::string EnumToString<TokenType>(TokenType value)
         {TokenType::WHITE, "WHITE"},
         {TokenType::TYPE, "TYPE"},
         {TokenType::SEMICOLON, "SEMICOLON"},
-        {TokenType::BINARY_OPERATOR, "BINARY_OPERATOR"}
+        {TokenType::BINARY_OPERATOR, "BINARY_OPERATOR"},
+        {TokenType::L_PARENTHESIS, "L_PARENTHESIS"},
+        {TokenType::R_PARENTHESIS, "R_PARENTHESIS"}
     };
 
     auto it = map.find(value);

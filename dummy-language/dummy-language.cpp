@@ -8,13 +8,6 @@
 #include "lexer.h"
 #include "expressions.h"
 
-/*
-*
-    DECLARATION: TYPE ID | TYPE ID = EXPRESION
-    BINARY_OPERATION: LITERAL OP LITERAL
-    EXPRESION: LITERAL | BINARY_OPERATION
-*/
-
 void CheckToken(const Token& token, TokenType expected_type)
 {
     if (token.type != expected_type) throw std::runtime_error("Expected " + EnumToString(expected_type) + " but got " + EnumToString(token.type));
@@ -34,7 +27,8 @@ bool CheckNext(std::list<Token>::iterator it, TokenType expected_type)
 
 enum StatementType {
     StatementType_UNDEFINED,
-    DECLARATION
+    DECLARATION,
+    F_CALL
 };
 
 class Statement {
@@ -69,6 +63,20 @@ public:
     Type type;
     std::string id;
     std::unique_ptr<Expression> Expression;
+};
+
+class FunctionCall : public Statement {
+public:
+    FunctionCall(const std::string& id, std::unique_ptr<Expression> expresion) :
+        id(id),
+        args(std::move(expresion))
+    {
+    }
+
+    StatementType TypeOf() override { return StatementType::F_CALL; }
+
+    std::string id;
+    std::unique_ptr<Expression> args;
 };
 
 class Program {
@@ -140,6 +148,30 @@ std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_
     return declaration;
 }
 
+std::unique_ptr<Statement> ParseFunctionCall(std::list<Token>::iterator& current_token)
+{
+    std::unique_ptr<FunctionCall> f_call;
+    std::string id;
+    std::unique_ptr<Expression> expr_arg;
+
+    CheckToken(*current_token, TokenType::ID);
+    id = current_token->body;
+
+    ++current_token;
+    CheckToken(*current_token, TokenType::L_PARENTHESIS);
+
+    ++current_token;
+    expr_arg = ParseExpresion(current_token);
+
+    if (expr_arg != nullptr) {
+        ++current_token;
+    }
+    CheckToken(*current_token, TokenType::R_PARENTHESIS);
+
+    f_call = std::make_unique<FunctionCall>(id, std::move(expr_arg));
+    return f_call;
+}
+
 std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_token)
 {
     std::unique_ptr<Statement> statement;
@@ -148,6 +180,12 @@ std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_to
     // Declaration
     if (token.type == TokenType::TYPE) {
         statement = ParseDeclaration(current_token);
+        ++current_token;
+        if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
+    }
+    // function call
+    else if (token.type == TokenType::ID) {
+        statement = ParseFunctionCall(current_token);
         ++current_token;
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
     }
@@ -169,7 +207,7 @@ Program Parse(std::list<Token>& tokens)
 int main()
 {
 
-    std::string text = "number variable = 2;";
+    std::string text = "print(2+2);";
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {
@@ -189,3 +227,11 @@ int main()
 
     return 0;
 }
+
+/*
+number a = 2;
+number b = 3;
+number c = a + b;
+
+print(c) 
+*/

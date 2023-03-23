@@ -11,6 +11,8 @@ enum class TokenType
     TYPE,
     SEMICOLON,
     BINARY_OPERATOR,
+    L_PARENTHESIS,
+    R_PARENTHESIS
 };
 
 struct Token {
