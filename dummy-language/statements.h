@@ -8,7 +8,7 @@
 enum StatementType {
     StatementType_UNDEFINED,
     DECLARATION,
-    F_CALL
+    EXPRESSION
 };
 
 class Statement {
@@ -25,10 +25,10 @@ public:
         STRING
     };
 
-    Declaration(Type type, const std::string& id, std::unique_ptr<Expression> Expression) :
+    Declaration(Type type, const std::string& id, std::unique_ptr<Expression> expression) :
         type(type),
         id(id),
-        Expression(std::move(Expression))
+        expression(std::move(expression))
     {
     }
 
@@ -42,21 +42,19 @@ public:
 
     Type type;
     std::string id;
-    std::unique_ptr<Expression> Expression;
+    std::unique_ptr<Expression> expression;
 };
 
-class FunctionCall : public Statement {
+class ExpressionStatement : public Statement {
 public:
-    FunctionCall(const std::string& id, std::unique_ptr<Expression> expresion) :
-        id(id),
-        args(std::move(expresion))
+    ExpressionStatement(std::unique_ptr<Expression> expression) :
+        expression(std::move(expression))
     {
     }
 
-    StatementType TypeOf() override { return StatementType::F_CALL; }
+    StatementType TypeOf() override { return StatementType::EXPRESSION; }
 
-    std::string id;
-    std::unique_ptr<Expression> args;
+    std::unique_ptr<Expression> expression;
 };
 
 class Program {
@@ -98,30 +96,6 @@ std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_
     return declaration;
 }
 
-std::unique_ptr<Statement> ParseFunctionCall(std::list<Token>::iterator& current_token)
-{
-    std::unique_ptr<FunctionCall> f_call;
-    std::string id;
-    std::unique_ptr<Expression> expr_arg;
-
-    CheckToken(*current_token, TokenType::ID);
-    id = current_token->body;
-
-    ++current_token;
-    CheckToken(*current_token, TokenType::L_PARENTHESIS);
-
-    ++current_token;
-    expr_arg = ParseExpresion(current_token);
-
-    if (expr_arg != nullptr) {
-        ++current_token;
-    }
-    CheckToken(*current_token, TokenType::R_PARENTHESIS);
-
-    f_call = std::make_unique<FunctionCall>(id, std::move(expr_arg));
-    return f_call;
-}
-
 std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_token)
 {
     std::unique_ptr<Statement> statement;
@@ -133,9 +107,9 @@ std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_to
         ++current_token;
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
     }
-    // function call
-    else if (token.type == TokenType::ID) {
-        statement = ParseFunctionCall(current_token);
+    // Parse expression
+    else if (token.type == TokenType::ID || token.type == TokenType::NUMBER || token.type == TokenType::STRING) {
+        statement = std::make_unique<ExpressionStatement>(ParseExpresion(current_token));
         ++current_token;
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
     }
