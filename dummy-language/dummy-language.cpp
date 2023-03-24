@@ -8,6 +8,17 @@
 #include "lexer.h"
 #include "expressions.h"
 #include "statements.h"
+#include "object.h"
+
+// buildin function
+void Print(Object& obj) {
+    if (obj.GetType() == Object::Type::INT) {
+        std::cout << obj.Get<int>();
+    }
+    else if (obj.GetType() == Object::Type::STRING) {
+        std::cout << obj.Get<std::string>();
+    }
+}
 
 Program Parse(std::list<Token>& tokens)
 {
@@ -19,6 +30,32 @@ Program Parse(std::list<Token>& tokens)
     }
     return program;
 }
+
+/*
+    ARGS["ID"] = VALUE;
+
+
+void Print(Value& value) {
+    if (value->typeof() == int) {
+        std::cout << value.asInt();
+    }
+}
+
+* GLOBAL SCOPE:
+*   ID -> VALUE
+* 
+* VALUE:
+*   VALUE -> INT -> 1
+*   VALUE -> STRING -> "hola"
+*   VALUE -> FUNCTION -> NO RETURN JUST APPLY
+* 
+* FUNCTION(ARG, GLOBAL SCOPE) { 
+*   DO SHIT WITH ARGS
+* }
+* 
+* 
+* GLOBAL["print"] = new Function(); 
+*/
 
 int main()
 {
@@ -49,5 +86,5 @@ number a = 2;
 number b = 3;
 number c = a + b;
 
-print(c) 
+print(c)
 */
