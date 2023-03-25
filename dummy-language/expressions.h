@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "checkers.h"
+#include "scope.h"
 
 enum ExpresionType {
     ExpresionType_UNDEFINED,
@@ -17,14 +18,17 @@ enum ExpresionType {
 class Expression {
 public:
     virtual ExpresionType TypeOf() { return {}; }
+    virtual Object Evaluate(Scope& scope) { return {}; }
 };
 
+// TODO: change to double :)
 class Number : public Expression {
 public:
-    double value;
+    int value;
 
-    Number(double value) : value(value) {}
+    Number(int value) : value(value) {}
     virtual ExpresionType TypeOf() override { return ExpresionType::NUMBER; }
+    Object Evaluate(Scope& scope) override { return Object(value); }
 };
 
 class String : public Expression {
@@ -33,6 +37,7 @@ public:
 
     String(const std::string& value) : value(value) {}
     virtual ExpresionType TypeOf() override { return ExpresionType::STRING; }
+    Object Evaluate(Scope& scope) override { return Object(value); }
 };
 
 class Identification : public Expression {
@@ -41,6 +46,7 @@ public:
 
     Identification(const std::string& value) : value(value) {}
     virtual ExpresionType TypeOf() override { return ExpresionType::ID; }
+    Object Evaluate(Scope& scope) override { return scope[value]; }
 };
 
 class BinaryOp : public Expression {
