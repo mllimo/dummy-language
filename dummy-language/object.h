@@ -2,8 +2,11 @@
 
 // CUSTOM PRIMITIVES 2
 
+#include <iostream>
 #include <vector>
 #include <functional>
+
+typedef int PrimitiveNumber;
 
 class Object {
 public:
@@ -45,7 +48,7 @@ public:
 	}
 
 	~Object() {
-		Free();
+		Free();	
 	}
 
 	Object& operator=(Object&& object) {
@@ -185,6 +188,6 @@ public:
 		}
 	}
 
-	operator CustomClass& () { return class_; }
-	operator CustomClass const& () { return class_; }
+	operator CustomClass& () { return *reinterpret_cast<CustomClass*>(value_); }
+	operator CustomClass const& () { return *reinterpret_cast<CustomClass*>(value_); }
 }; 

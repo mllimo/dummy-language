@@ -2,11 +2,12 @@
 
 #include <string>
 #include <memory>
+#include <stack>
 
 #include "checkers.h"
 #include "scope.h"
 
-enum ExpresionType {
+enum ExpressionType {
     ExpresionType_UNDEFINED,
     NUMBER,
     STRING,
@@ -17,7 +18,8 @@ enum ExpresionType {
 
 class Expression {
 public:
-    virtual ExpresionType TypeOf() { return {}; }
+    virtual ExpressionType TypeOf() { return {}; }
+    virtual bool IsSimpleExpression() { return true; }
     virtual Object Evaluate(Scope& scope) { return {}; }
 };
 
@@ -27,7 +29,8 @@ public:
     int value;
 
     Number(int value) : value(value) {}
-    virtual ExpresionType TypeOf() override { return ExpresionType::NUMBER; }
+    virtual ExpressionType TypeOf() override { return ExpressionType::NUMBER; }
+    virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
 };
 
@@ -36,7 +39,8 @@ public:
     std::string value;
 
     String(const std::string& value) : value(value) {}
-    virtual ExpresionType TypeOf() override { return ExpresionType::STRING; }
+    virtual ExpressionType TypeOf() override { return ExpressionType::STRING; }
+    virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
 };
 
@@ -45,7 +49,7 @@ public:
     std::string value;
 
     Identification(const std::string& value) : value(value) {}
-    virtual ExpresionType TypeOf() override { return ExpresionType::ID; }
+    virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return scope[value]; }
 };
 
@@ -62,7 +66,15 @@ public:
     {
     }
 
-    virtual ExpresionType TypeOf() override { return ExpresionType::BINARY_OP; }
+    virtual ExpressionType TypeOf() override { return ExpressionType::BINARY_OP; }
+    virtual bool IsSimpleExpression() { return false; }
+    Object Evaluate(Scope& scope) override;
+
+private:
+    int GetPrecedence(const std::string& op_id);
+    void RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string> operators);
+    Object InfixEval(std::stack<Object>& values, std::stack<std::string> operators);
+
 };
 
 class FunctionCall : public Expression {
@@ -73,7 +85,7 @@ public:
     {
     }
 
-    ExpresionType TypeOf() override { return ExpresionType::F_CALL; }
+    ExpressionType TypeOf() override { return ExpressionType::F_CALL; }
 
     std::string id;
     std::unique_ptr<Expression> args;
@@ -81,61 +93,4 @@ public:
 
 // header
 std::unique_ptr<Expression> ParseFunctionCall(std::list<Token>::iterator& current_token);
-
-std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_token)
-{
-    std::unique_ptr<Expression> expr;
-    if (current_token->type == TokenType::NUMBER || current_token->type == TokenType::STRING || current_token->type == TokenType::ID) {
-
-        if (CheckNext(current_token, TokenType::L_PARENTHESIS)) {
-            expr = ParseFunctionCall(current_token);
-        }
-        else {
-            switch (current_token->type) {
-            case TokenType::NUMBER:
-                expr = std::make_unique<Number>(stod(current_token->body));
-                break;
-            case TokenType::STRING:
-                expr = std::make_unique<String>(current_token->body);
-                break;
-            case TokenType::ID:
-                expr = std::make_unique<Identification>(current_token->body);
-                break;
-            }
-
-            if (CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
-                ++current_token; // Binary operator
-                Token token_op = *current_token;
-                ++current_token; // second expr
-                auto expr2 = ParseExpresion(current_token);
-                expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
-            }
-        }
-    }
-
-    return expr;
-}
-
-std::unique_ptr<Expression> ParseFunctionCall(std::list<Token>::iterator& current_token)
-{
-    std::unique_ptr<FunctionCall> f_call;
-    std::string id;
-    std::unique_ptr<Expression> expr_arg;
-
-    CheckToken(*current_token, TokenType::ID);
-    id = current_token->body;
-
-    ++current_token;
-    CheckToken(*current_token, TokenType::L_PARENTHESIS);
-
-    ++current_token;
-    expr_arg = ParseExpresion(current_token);
-
-    if (expr_arg != nullptr) {
-        ++current_token;
-    }
-    CheckToken(*current_token, TokenType::R_PARENTHESIS);
-
-    f_call = std::make_unique<FunctionCall>(id, std::move(expr_arg));
-    return f_call;
-}
+std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_token);

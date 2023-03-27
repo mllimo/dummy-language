@@ -3,7 +3,9 @@
 #
 
 # Agregue un origen al ejecutable de este proyecto.
-add_executable (dummy-language "dummy-language.cpp"  "token.h" "enum_utility.h" "lexer.h" "expressions.h" "statements.h" "checkers.h")
+add_library(interpreter STATIC "token.h" "enum_utility.h" "lexer.h" "expressions.h" "expressions.cpp" "statements.h" "checkers.h" "checkers.cpp"   "enum_utility.cpp")
+add_executable (dummy-language "dummy-language.cpp")
+target_link_libraries(dummy-language interpreter)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET dummy-language PROPERTY CXX_STANDARD 20)
