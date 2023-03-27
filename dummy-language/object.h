@@ -15,7 +15,13 @@ public:
 
 	Object() : type_(Type::UNDEFINED) {}
 
-	Object(Object&&) = default;
+	Object(Object&& object)
+	{
+		value_ = std::move(object.value_);
+		type_ = object.type_;
+		object.type_ = Type::UNDEFINED;
+	}
+
 
 
 	Object(int value) : type_(Type::INT) {

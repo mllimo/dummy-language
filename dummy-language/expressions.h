@@ -72,8 +72,8 @@ public:
 
 private:
     int GetPrecedence(const std::string& op_id);
-    void RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string> operators);
-    Object InfixEval(std::stack<Object>& values, std::stack<std::string> operators);
+    void RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string>& operators);
+    Object InfixEval(std::stack<Object>& values, std::stack<std::string>& operators);
 
 };
 

@@ -75,7 +75,7 @@ int BinaryOp::GetPrecedence(const std::string& op_id)
     return it->second;
 }
 
-Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string> operators)
+Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string>& operators)
 {
     // TODO: string and erros
 
@@ -105,7 +105,7 @@ Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string> o
     return 0;
 }
 
-void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string> operators)
+void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string>& operators)
 {
     if (current_expression.TypeOf() == ExpressionType::NUMBER ||
         current_expression.TypeOf() == ExpressionType::STRING ||
@@ -139,7 +139,7 @@ void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::
             values.push(current_cast.op2->Evaluate(scope));
         }
         else {
-            RecursiveEval(*current_cast.op1, scope, values, operators);
+            RecursiveEval(*current_cast.op2, scope, values, operators);
         }
 
     }

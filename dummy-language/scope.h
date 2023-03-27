@@ -6,6 +6,7 @@
 
 class Scope {
 public:
+	Scope() = default;
 	Scope(std::unordered_map<std::string, std::reference_wrapper<Object>> variables) : variables_(std::move(variables)) {}
 
 	Object& operator[](const std::string& name) {

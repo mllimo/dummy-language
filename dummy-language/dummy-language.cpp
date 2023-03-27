@@ -60,7 +60,7 @@ void Print(Value& value) {
 int main()
 {
 
-    std::string text = "print(2+2);";
+    std::string text = "2+2*3;";
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {
@@ -72,6 +72,10 @@ int main()
         for (auto& statement : program.statements) {
             std::cout << statement->TypeOf() << std::endl;
         }
+        Scope fake_scope;
+        auto expression_statement = dynamic_cast<ExpressionStatement*>(program.statements.front().get());
+        auto object = expression_statement->expression->Evaluate(fake_scope);
+        std::cout << "Eval = " << object.Get<PrimitiveNumber>() << std::endl;
     }
     catch (std::exception& err) {
         std::cerr << err.what() << std::endl;
