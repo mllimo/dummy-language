@@ -86,6 +86,8 @@ public:
     }
 
     ExpressionType TypeOf() override { return ExpressionType::F_CALL; }
+    Object Evaluate(Scope& scope) override;
+
 
     std::string id;
     std::unique_ptr<Expression> args;

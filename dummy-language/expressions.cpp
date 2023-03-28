@@ -181,3 +181,10 @@ Object BinaryOp::Evaluate(Scope& scope)
 
     return std::move(values.top());
 }
+
+Object FunctionCall::Evaluate(Scope& scope)
+{
+    auto callback = scope[id].Get<std::function<void(Object&)>>();
+    callback(args->Evaluate(scope));
+    return {};
+}
