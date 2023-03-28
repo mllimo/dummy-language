@@ -108,7 +108,7 @@ std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_to
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
     }
     // Parse expression
-    else if (token.type == TokenType::ID || token.type == TokenType::NUMBER || token.type == TokenType::STRING) {
+    else if (token.type == TokenType::ID || token.type == TokenType::NUMBER || token.type == TokenType::STRING || token.type == TokenType::L_PARENTHESIS) {
         statement = std::make_unique<ExpressionStatement>(ParseExpresion(current_token));
         ++current_token;
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");

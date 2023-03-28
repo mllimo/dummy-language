@@ -25,12 +25,27 @@ std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_t
             }
 
             if (CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
-                ++current_token; // Binary operator
+                ++current_token;
                 Token token_op = *current_token;
-                ++current_token; // second expr
+                ++current_token;
                 auto expr2 = ParseExpresion(current_token);
                 expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
             }
+        }
+    }
+    else if (current_token->type == TokenType::L_PARENTHESIS) {
+        // TODO: Refactor
+        ++current_token;
+        expr = ParseExpresion(current_token);
+        ++current_token;
+        CheckToken(*current_token, TokenType::R_PARENTHESIS);
+
+        if (CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
+            ++current_token;
+            Token token_op = *current_token;
+            ++current_token;
+            auto expr2 = ParseExpresion(current_token);
+            expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
         }
     }
 
@@ -122,8 +137,9 @@ void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::
             values.push(current_cast.op1->Evaluate(scope));
         }
         else {
-            // TODO: add throw. Possible Syntax error
             RecursiveEval(*current_cast.op1, scope, values, operators);
+            Object result = InfixEval(values, operators);
+            values.push(std::move(result));
         }
 
         while (!operators.empty() && GetPrecedence(current_cast.operator_str) <= GetPrecedence(operators.top())) {

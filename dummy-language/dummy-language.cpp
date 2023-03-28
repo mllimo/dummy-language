@@ -60,7 +60,7 @@ void Print(Value& value) {
 int main()
 {
 
-    std::string text = "2+2*3;";
+    std::string text = "(2 + 2) * 3 + (10 + 10);"; // 4 * 3 + 20 -> 12 + 20 -> 32
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {

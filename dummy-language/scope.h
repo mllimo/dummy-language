@@ -12,7 +12,7 @@ public:
 	Object& operator[](const std::string& name) {
 		auto it = variables_.find(name);
 		if (it == variables_.end())
-			std::runtime_error("Variable " + name + " not in scope");
+			throw std::runtime_error("Variable " + name + " not in scope");
 		return it->second;
 	}
 

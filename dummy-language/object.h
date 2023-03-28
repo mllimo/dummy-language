@@ -196,4 +196,4 @@ public:
 
 	operator CustomClass& () { return *reinterpret_cast<CustomClass*>(value_); }
 	operator CustomClass const& () { return *reinterpret_cast<CustomClass*>(value_); }
-}; 
+};
