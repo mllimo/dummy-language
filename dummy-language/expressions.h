@@ -7,18 +7,18 @@
 #include "checkers.h"
 #include "scope.h"
 
-enum ExpressionType {
-    ExpresionType_UNDEFINED,
-    NUMBER,
-    STRING,
-    ID,
-    BINARY_OP,
-    F_CALL
-};
-
 class Expression {
 public:
-    virtual ExpressionType TypeOf() { return {}; }
+    enum class Type {
+        UNDEFINED,
+        NUMBER,
+        STRING,
+        ID,
+        BINARY_OP,
+        F_CALL
+    };
+
+    virtual Expression::Type TypeOf() { return {}; }
     virtual bool IsSimpleExpression() { return true; }
     virtual Object Evaluate(Scope& scope) { return {}; }
 };
@@ -29,7 +29,7 @@ public:
     int value;
 
     Number(int value) : value(value) {}
-    virtual ExpressionType TypeOf() override { return ExpressionType::NUMBER; }
+    virtual Expression::Type TypeOf() override { return Expression::Type::NUMBER; }
     virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
 };
@@ -39,7 +39,7 @@ public:
     std::string value;
 
     String(const std::string& value) : value(value) {}
-    virtual ExpressionType TypeOf() override { return ExpressionType::STRING; }
+    virtual Expression::Type TypeOf() override { return Expression::Type::STRING; }
     virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
 };
@@ -66,7 +66,7 @@ public:
     {
     }
 
-    virtual ExpressionType TypeOf() override { return ExpressionType::BINARY_OP; }
+    virtual Expression::Type TypeOf() override { return Expression::Type::BINARY_OP; }
     virtual bool IsSimpleExpression() { return false; }
     Object Evaluate(Scope& scope) override;
 
@@ -85,7 +85,7 @@ public:
     {
     }
 
-    ExpressionType TypeOf() override { return ExpressionType::F_CALL; }
+    Expression::Type TypeOf() override { return Expression::Type::F_CALL; }
     Object Evaluate(Scope& scope) override;
 
 

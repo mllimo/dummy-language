@@ -9,16 +9,7 @@
 #include "expressions.h"
 #include "statements.h"
 #include "object.h"
-
-// buildin function
-void Print(Object& obj) {
-    if (obj.GetType() == Object::Type::INT) {
-        std::cout << obj.Get<int>();
-    }
-    else if (obj.GetType() == Object::Type::STRING) {
-        std::cout << obj.Get<std::string>();
-    }
-}
+#include "buildin.h"
 
 Program Parse(std::list<Token>& tokens)
 {
@@ -59,8 +50,13 @@ void Print(Value& value) {
 
 int main()
 {
-    std::string text = "print(10);";
+    std::string text = "print((2 + 2) * 3 + (10 + 10));";
     // std::string text = "(2 + 2) * 3 + (10 + 10);"; // 4 * 3 + 20 -> 12 + 20 -> 32
+    //std::string text = "number a = 2; \
+    //                    number b = 3; \
+    //                    number c = a + b; \
+    //                    print(c)";
+
     auto tokens = Tokenize(text);
 
     for (auto& token : tokens) {
@@ -70,15 +66,18 @@ int main()
     try {
         Program program = Parse(tokens);
         for (auto& statement : program.statements) {
-            std::cout << statement->TypeOf() << std::endl;
+            std::cout << (int)statement->TypeOf() << std::endl;
         }
         Scope fake_scope;
 
         // buildin
         auto print_f = Class<std::function<void(Object&)>>(&Print);
+        auto scan_f = Class<std::function<void(Object&)>>(&Scan);
         //
 
         fake_scope.Add("print", print_f);
+        fake_scope.Add("scan", scan_f);
+
 
         auto f_call_statement = dynamic_cast<ExpressionStatement*>(program.statements.front().get());
         f_call_statement->expression->Evaluate(fake_scope);

@@ -122,13 +122,13 @@ Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string>& 
 
 void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string>& operators)
 {
-    if (current_expression.TypeOf() == ExpressionType::NUMBER ||
-        current_expression.TypeOf() == ExpressionType::STRING ||
-        current_expression.TypeOf() == ExpressionType::ID ||
-        current_expression.TypeOf() == ExpressionType::F_CALL) {
+    if (current_expression.TypeOf() == Expression::Type::NUMBER ||
+        current_expression.TypeOf() == Expression::Type::STRING ||
+        current_expression.TypeOf() == Expression::Type::ID ||
+        current_expression.TypeOf() == Expression::Type::F_CALL) {
         values.push(current_expression.Evaluate(scope));
     }
-    else if (current_expression.TypeOf() == ExpressionType::BINARY_OP) {
+    else if (current_expression.TypeOf() == Expression::Type::BINARY_OP) {
         
         BinaryOp& current_cast = dynamic_cast<BinaryOp&>(current_expression);
 

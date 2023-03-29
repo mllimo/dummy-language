@@ -5,16 +5,16 @@
 #include "expressions.h"
 #include "checkers.h"
 
-enum StatementType {
-    StatementType_UNDEFINED,
-    DECLARATION,
-    EXPRESSION
-};
-
 class Statement {
 public:
+    enum class Type {
+        UNDEFINED,
+        DECLARATION,
+        EXPRESSION
+    };
+
     virtual ~Statement() {}
-    virtual StatementType TypeOf() { return {}; }
+    virtual Statement::Type TypeOf() { return {}; }
 };
 
 class Declaration : public Statement {
@@ -38,7 +38,7 @@ public:
     {
     }
 
-    StatementType TypeOf() override { return StatementType::DECLARATION; }
+    Statement::Type TypeOf() override { return Statement::Type::DECLARATION; }
 
     Type type;
     std::string id;
@@ -52,7 +52,7 @@ public:
     {
     }
 
-    StatementType TypeOf() override { return StatementType::EXPRESSION; }
+    Statement::Type TypeOf() override { return Statement::Type::EXPRESSION; }
 
     std::unique_ptr<Expression> expression;
 };
@@ -108,7 +108,7 @@ std::unique_ptr<Statement> ParseStatement(std::list<Token>::iterator& current_to
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
     }
     // Parse expression
-    else if (token.type == TokenType::ID || token.type == TokenType::NUMBER || token.type == TokenType::STRING || token.type == TokenType::L_PARENTHESIS) {
+    else if (CheckOnOf(token, { TokenType::ID, TokenType::NUMBER, TokenType::STRING, TokenType::L_PARENTHESIS })) {
         statement = std::make_unique<ExpressionStatement>(ParseExpresion(current_token));
         ++current_token;
         if (current_token->type != TokenType::SEMICOLON) throw std::runtime_error("Expected semicolon");
