@@ -3,7 +3,7 @@
 #
 
 # Agregue un origen al ejecutable de este proyecto.
-add_library(interpreter STATIC "token.h" "enum_utility.h" "lexer.h" "expressions.h" "expressions.cpp" "statements.h" "checkers.h" "checkers.cpp"   "enum_utility.cpp" "buildin.h" "buildin.cpp")
+add_library(interpreter STATIC "token.h" "enum_utility.h" "lexer.h" "expressions.h" "expressions.cpp" "statements.h" "checkers.h" "checkers.cpp"   "enum_utility.cpp" "buildin.h" "buildin.cpp" "statements.cpp")
 add_executable (dummy-language "dummy-language.cpp")
 target_link_libraries(dummy-language interpreter)
 

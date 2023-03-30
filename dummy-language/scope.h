@@ -7,11 +7,11 @@
 class Scope {
 public:
 	Scope() = default;
-	Scope(std::unordered_map<std::string, std::reference_wrapper<Object>> variables) : variables_(std::move(variables)) {}
+	Scope(std::unordered_map<std::string, Object> variables) : variables_(std::move(variables)) {}
 
-	void Add(const std::string& name, std::reference_wrapper<Object> value)
+	void Add(const std::string& name, Object&& value)
 	{
-		variables_.emplace(name, value);
+		variables_.emplace(name, std::move(value));
 	}
 
 	Object& operator[](const std::string& name) {
@@ -22,5 +22,5 @@ public:
 	}
 
 private:
-	std::unordered_map<std::string, std::reference_wrapper<Object>> variables_;
+	std::unordered_map<std::string, Object> variables_;
 };

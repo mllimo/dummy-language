@@ -50,12 +50,13 @@ void Print(Value& value) {
 
 int main()
 {
-    std::string text = "print((2 + 2) * 3 + (10 + 10));";
+    //std::string text = "print((2 + 2) * 3 + (10 + 10));";
     // std::string text = "(2 + 2) * 3 + (10 + 10);"; // 4 * 3 + 20 -> 12 + 20 -> 32
-    //std::string text = "number a = 2; \
-    //                    number b = 3; \
-    //                    number c = a + b; \
-    //                    print(c)";
+    //std::string text = "number a = 3; number b = 5; print(a); print(b);";
+    std::string text = "number a = 2; \
+                        number b = 3; \
+                        number c = a + b; \
+                        print(c);";
 
     auto tokens = Tokenize(text);
 
@@ -65,9 +66,6 @@ int main()
 
     try {
         Program program = Parse(tokens);
-        for (auto& statement : program.statements) {
-            std::cout << (int)statement->TypeOf() << std::endl;
-        }
         Scope fake_scope;
 
         // buildin
@@ -75,16 +73,10 @@ int main()
         auto scan_f = Class<std::function<void(Object&)>>(&Scan);
         //
 
-        fake_scope.Add("print", print_f);
-        fake_scope.Add("scan", scan_f);
+        fake_scope.Add("print", std::move(print_f));
+        fake_scope.Add("scan", std::move(scan_f));
 
-
-        auto f_call_statement = dynamic_cast<ExpressionStatement*>(program.statements.front().get());
-        f_call_statement->expression->Evaluate(fake_scope);
-
-        //auto expression_statement = dynamic_cast<ExpressionStatement*>(program.statements.front().get());
-        //auto object = expression_statement->expression->Evaluate(fake_scope);
-        //std::cout << "Eval = " << object.Get<PrimitiveNumber>() << std::endl;
+        program.Evaluate(fake_scope);
     }
     catch (std::exception& err) {
         std::cerr << err.what() << std::endl;
