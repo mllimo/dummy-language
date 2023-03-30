@@ -62,6 +62,7 @@ public:
 
 class Program {
 public:
+    Program(std::list<Token>& tokens);
     std::list<std::unique_ptr<Statement>> statements;
     void Evaluate(Scope& scope);
 };

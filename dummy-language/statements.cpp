@@ -1,5 +1,14 @@
 #include "statements.h"
 
+Program::Program(std::list<Token>& tokens)
+{
+    for (auto it = tokens.begin(); it != tokens.end(); ++it) {
+        auto statement = ParseStatement(it);
+        if (statement == nullptr) break;
+        statements.push_back(std::move(statement));
+    }
+}
+
 void Declaration::Evaluate(Scope& scope)
 {
     scope.Add(id, expression->Evaluate(scope));

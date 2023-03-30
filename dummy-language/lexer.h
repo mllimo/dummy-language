@@ -8,6 +8,18 @@
 #include <string>
 #include <regex>
 
+static std::string RemoveQuotes(const std::string& str, size_t& removed) {
+    std::string string;
+    if (str.front() == '"' && str.back() == '"') {
+        string = str.substr(1, str.size() - 2);
+        removed += 2;
+    }
+    else {
+        string = str;
+    }
+    return string;
+}
+
 Token Lexer(std::string& text)
 {
     static const std::regex ID_x("([a-z]|[A-Z])(_|[0-9]|[a-z]|[A-Z])*");
@@ -25,9 +37,10 @@ Token Lexer(std::string& text)
     std::smatch matches;
     Token token;
 
+    size_t removed_chars = 0;
     if (std::regex_search(text, matches, ID_x) && matches.position(0) == 0) token = { TokenType::ID,  matches[0] };
     if (std::regex_search(text, matches, NUMBER_x) && matches.position(0) == 0) token = { TokenType::NUMBER, matches[0] };
-    if (std::regex_search(text, matches, STRING_x) && matches.position(0) == 0) token = { TokenType::STRING, matches[0] };
+    if (std::regex_search(text, matches, STRING_x) && matches.position(0) == 0) token = { TokenType::STRING, RemoveQuotes(matches[0].str(), removed_chars) };
     if (std::regex_search(text, matches, COMMENT) && matches.position(0) == 0) token = { TokenType::COMMENT, matches[0] };
     if (std::regex_search(text, matches, WHITE_x) && matches.position(0) == 0) token = { TokenType::WHITE, matches[0] };
     if (std::regex_search(text, matches, TYPE_x) && matches.position(0) == 0) token = { TokenType::TYPE, matches[0] };
@@ -36,7 +49,7 @@ Token Lexer(std::string& text)
     if (std::regex_search(text, matches, LP_x) && matches.position(0) == 0) token = { TokenType::L_PARENTHESIS, matches[0] };
     if (std::regex_search(text, matches, RP_x) && matches.position(0) == 0) token = { TokenType::R_PARENTHESIS, matches[0] };
 
-    text.erase(0, token.body.size());
+    text.erase(0, token.body.size() + removed_chars);
 
     return token;
 }
