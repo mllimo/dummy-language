@@ -84,7 +84,7 @@ public:
             return new Vector(*reinterpret_cast<Vector*>(value_));
         }
         else if (type_ != Type::UNDEFINED) {
-            throw std::runtime_error("Object::Copy: Uknown type");
+            throw std::runtime_error("Object::Copy: Unknown type");
         }
         return nullptr;
     }
@@ -126,7 +126,7 @@ public:
             os << "]";
         }
         else if (object.type_ != Type::UNDEFINED) {
-            throw std::runtime_error("Object operator<<: Uknown type");
+            throw std::runtime_error("Object operator<<: Unknown type");
         }
         return os;
     }
@@ -164,7 +164,7 @@ protected:
             Release();
         }
         else if (type_ != Type::UNDEFINED) {
-            throw std::runtime_error("Object::Release: Uknown type");
+            throw std::runtime_error("Object::Release: Unknown type");
         }
         type_ = Type::UNDEFINED;
     }
