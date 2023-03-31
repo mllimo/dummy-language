@@ -17,7 +17,7 @@ int main()
                         number b = 3; \
                         number c = a + b; \
                         print(\"a + b = \"); \
-                        print(c);";
+                        print(c); ";
 
     auto tokens = Tokenize(text);
 
