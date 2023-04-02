@@ -45,10 +45,10 @@ std::unique_ptr<Statement> ParseDeclaration(std::list<Token>::iterator& current_
 
     CheckToken(*current_token, TokenType::ID);
 
-    id = current_token->body;
+    id = std::move(current_token->body);
 
     if (!CheckNext(current_token, TokenType::BINARY_OPERATOR)) {
-        declaration = std::make_unique<Declaration>(type, id);
+        declaration = std::make_unique<Declaration>(type, std::move(id));
     }
     else {
         ++current_token; // binary op 

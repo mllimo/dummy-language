@@ -29,6 +29,7 @@ public:
     int value;
 
     Number(int value) : value(value) {}
+
     virtual Expression::Type TypeOf() override { return Expression::Type::NUMBER; }
     virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
@@ -39,6 +40,8 @@ public:
     std::string value;
 
     String(const std::string& value) : value(value) {}
+    String(std::string&& value) : value(std::move(value)) {}
+
     virtual Expression::Type TypeOf() override { return Expression::Type::STRING; }
     virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return Object(value); }
@@ -49,6 +52,8 @@ public:
     std::string value;
 
     Identification(const std::string& value) : value(value) {}
+    Identification(std::string&& value) : value(std::move(value)) {}
+
     virtual bool IsSimpleExpression() { return true; }
     Object Evaluate(Scope& scope) override { return scope[value]; }
 };
@@ -59,8 +64,15 @@ public:
     std::unique_ptr<Expression> op1;
     std::unique_ptr<Expression> op2;
 
-    BinaryOp(const std::string operator_str, std::unique_ptr<Expression> op1, std::unique_ptr<Expression> op2) :
+    BinaryOp(const std::string& operator_str, std::unique_ptr<Expression> op1, std::unique_ptr<Expression> op2) :
         operator_str(operator_str),
+        op1(std::move(op1)),
+        op2(std::move(op2))
+    {
+    }
+
+    BinaryOp(std::string&& operator_str, std::unique_ptr<Expression> op1, std::unique_ptr<Expression> op2) :
+        operator_str(std::move(operator_str)),
         op1(std::move(op1)),
         op2(std::move(op2))
     {
@@ -79,8 +91,14 @@ private:
 
 class FunctionCall : public Expression {
 public:
-    FunctionCall(const std::string& id, std::unique_ptr<Expression> expresion) :
+    FunctionCall(const std::string& id, std::unique_ptr<Expression> expresion = nullptr) :
         id(id),
+        args(std::move(expresion))
+    {
+    }
+
+    FunctionCall(std::string&& id, std::unique_ptr<Expression> expresion = nullptr) :
+        id(std::move(id)),
         args(std::move(expresion))
     {
     }

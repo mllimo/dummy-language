@@ -17,10 +17,10 @@ std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_t
                 expr = std::make_unique<Number>(stoi(current_token->body));
                 break;
             case TokenType::STRING:
-                expr = std::make_unique<String>(current_token->body);
+                expr = std::make_unique<String>(std::move(current_token->body));
                 break;
             case TokenType::ID:
-                expr = std::make_unique<Identification>(current_token->body);
+                expr = std::make_unique<Identification>(std::move(current_token->body));
                 break;
             }
 
@@ -29,7 +29,7 @@ std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_t
                 Token token_op = *current_token;
                 ++current_token;
                 auto expr2 = ParseExpresion(current_token);
-                expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
+                expr = std::make_unique<BinaryOp>(std::move(token_op.body), std::move(expr), std::move(expr2));
             }
         }
     }
@@ -45,7 +45,7 @@ std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_t
             Token token_op = *current_token;
             ++current_token;
             auto expr2 = ParseExpresion(current_token);
-            expr = std::make_unique<BinaryOp>(token_op.body, std::move(expr), std::move(expr2));
+            expr = std::make_unique<BinaryOp>(std::move(token_op.body), std::move(expr), std::move(expr2));
         }
     }
 
@@ -59,7 +59,7 @@ std::unique_ptr<Expression> ParseFunctionCall(std::list<Token>::iterator& curren
     std::unique_ptr<Expression> expr_arg;
 
     CheckToken(*current_token, TokenType::ID);
-    id = current_token->body;
+    id = std::move(current_token->body);
 
     ++current_token;
     CheckToken(*current_token, TokenType::L_PARENTHESIS);
@@ -72,7 +72,7 @@ std::unique_ptr<Expression> ParseFunctionCall(std::list<Token>::iterator& curren
     }
     CheckToken(*current_token, TokenType::R_PARENTHESIS);
 
-    f_call = std::make_unique<FunctionCall>(id, std::move(expr_arg));
+    f_call = std::make_unique<FunctionCall>(std::move(id), std::move(expr_arg));
     return f_call;
 }
 

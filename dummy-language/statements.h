@@ -26,16 +26,17 @@ public:
         STRING
     };
 
-    Declaration(Type type, const std::string& id, std::unique_ptr<Expression> expression) :
+    Declaration(Type type, const std::string& id, std::unique_ptr<Expression> expression = nullptr) :
         type(type),
         id(id),
         expression(std::move(expression))
     {
     }
 
-    Declaration(Type type, const std::string& id) :
+    Declaration(Type type, std::string&& id, std::unique_ptr<Expression> expression = nullptr) :
         type(type),
-        id(id)
+        id(std::move(id)),
+        expression(std::move(expression))
     {
     }
 
