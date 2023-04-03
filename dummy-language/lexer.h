@@ -23,7 +23,7 @@ static std::string RemoveQuotes(const std::string& str, size_t& removed) {
 Token Lexer(std::string& text)
 {
     static const std::regex ID_x("([a-z]|[A-Z])(_|[0-9]|[a-z]|[A-Z])*");
-    static const std::regex NUMBER_x("(\\+|-)?[0-9]+");
+    static const std::regex NUMBER_x("(\\+|-)?[0-9]+(\.[0-9]+)?");
     static const std::regex STRING_x("\"[^\"]*\"");
     static const std::regex COMMENT("//[^\n]\n");
     static const std::regex WHITE_x("\\s+");

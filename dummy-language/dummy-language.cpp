@@ -13,8 +13,8 @@
 
 int main()
 {
-    std::string text = "number a = 2; \
-                        number b = 3; \
+    std::string text = "number a = 2.5; \
+                        number b = 3.14; \
                         number c = a + b; \
                         print(\"a + b = \"); \
                         print(c); ";

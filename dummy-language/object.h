@@ -6,12 +6,12 @@
 #include <vector>
 #include <functional>
 
-typedef int PrimitiveNumber;
+typedef double PrimitiveNumber;
 
 class Object {
 public:
     using Vector = std::vector<Object>;
-    enum class Type { UNDEFINED, INT, BOOL, STRING, VECTOR, CLASS };
+    enum class Type { UNDEFINED, NUMBER, BOOL, STRING, VECTOR, CLASS };
 
     Object() : type_(Type::UNDEFINED) {}
 
@@ -22,8 +22,8 @@ public:
         object.type_ = Type::UNDEFINED;
     }
 
-    Object(int value) : type_(Type::INT) {
-        value_ = new int(value);
+    Object(PrimitiveNumber value) : type_(Type::NUMBER) {
+        value_ = new PrimitiveNumber(value);
     }
 
     Object(bool value) : type_(Type::BOOL) {
@@ -71,8 +71,8 @@ public:
     }
 
     virtual void* Copy() const {
-        if (type_ == Type::INT) {
-            return new int(*reinterpret_cast<int*>(value_));
+        if (type_ == Type::NUMBER) {
+            return new PrimitiveNumber(*reinterpret_cast<PrimitiveNumber*>(value_));
         }
         else if (type_ == Type::BOOL) {
             return new bool(*reinterpret_cast<bool*>(value_));
@@ -108,8 +108,8 @@ public:
     //
 
     friend std::ostream& operator<<(std::ostream& os, const Object& object) {
-        if (object.type_ == Type::INT) {
-            os << object.Get<int>();
+        if (object.type_ == Type::NUMBER) {
+            os << object.Get<PrimitiveNumber>();
         }
         else if (object.type_ == Type::BOOL) {
             os << object.Get<bool>();
@@ -148,8 +148,8 @@ protected:
     virtual void Release() {}
 
     void Free() {
-        if (type_ == Type::INT) {
-            FreePtr<int>(value_);
+        if (type_ == Type::NUMBER) {
+            FreePtr<PrimitiveNumber>(value_);
         }
         else if (type_ == Type::BOOL) {
             FreePtr<bool>(value_);

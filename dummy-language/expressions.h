@@ -26,9 +26,9 @@ public:
 // TODO: change to double :)
 class Number : public Expression {
 public:
-    int value;
+    PrimitiveNumber value;
 
-    Number(int value) : value(value) {}
+    Number(PrimitiveNumber value) : value(value) {}
 
     virtual Expression::Type TypeOf() override { return Expression::Type::NUMBER; }
     virtual bool IsSimpleExpression() { return true; }

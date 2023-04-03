@@ -14,7 +14,7 @@ std::unique_ptr<Expression> ParseExpresion(std::list<Token>::iterator& current_t
         else {
             switch (current_token->type) {
             case TokenType::NUMBER:
-                expr = std::make_unique<Number>(stoi(current_token->body));
+                expr = std::make_unique<Number>(stod(current_token->body));
                 break;
             case TokenType::STRING:
                 expr = std::make_unique<String>(std::move(current_token->body));
@@ -103,9 +103,10 @@ Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string>& 
     operators.pop();
 
     if (op == "+") {
+        // TODO: string "str1" + "str2" = "str1str2"
         return  y.Get<PrimitiveNumber>() + x.Get<PrimitiveNumber>();
     }
-    else if (op == "-") {
+    else if (op == "-") {  
         return y.Get<PrimitiveNumber>() - x.Get<PrimitiveNumber>();
     }
     else if (op == "*") {
@@ -117,7 +118,7 @@ Object BinaryOp::InfixEval(std::stack<Object>& values, std::stack<std::string>& 
     }
    
     throw std::runtime_error("Can not evaluate the current operator: " + op);
-    return 0;
+    return {};
 }
 
 void BinaryOp::RecursiveEval(Expression& current_expression, Scope& scope, std::stack<Object>& values, std::stack<std::string>& operators)
