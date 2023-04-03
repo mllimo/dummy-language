@@ -6,3 +6,4 @@ TODO:
 * if - else
 * while
 * functions
+* logic operators
